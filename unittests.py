@@ -66,6 +66,23 @@ class TestRelu(unittest.TestCase):
         # generate the `assembly/TestRelu_test_simple.s` file and run it through venus
         t.execute()
 
+    def test_relu_large_numbers(self):
+        # load the test for relu.s
+        t = AssemblyTest(self, "relu.s")
+        t.include("abs.s")
+        # create an array in the data section with large integers
+        array = t.array([100000, -100000, 2147483647, -2147483648])
+        # load address of `array` into register a0
+        t.input_array("a0", array)
+        # set a1 to the length of our array
+        t.input_scalar("a1", len(array))
+        # call the `relu` function
+        t.call("relu")
+        # check that the array was changed appropriately
+        t.check_array(array, [100000, 0, 2147483647, 0])
+        # execute the test
+        t.execute()
+
     def test_relu_length_1(self):
         # load the test for relu.s
         t = AssemblyTest(self, "relu.s")
@@ -99,6 +116,36 @@ class TestArgmax(unittest.TestCase):
         t = AssemblyTest(self, "argmax.s")
         # create an array in the data section
         array0 = t.array([3, -42, 432, 7, -5, 6, 5, -114, 2])
+        # load address of the array into register a0
+        t.input_array("a0", array0)
+        # set a1 to the length of the array
+        t.input_scalar("a1", len(array0))
+        # call the `argmax` function
+        t.call("argmax")
+        # check that the register a0 contains the correct output
+        t.check_scalar("a0", 2)
+        # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
+        t.execute()
+
+    def test_argmax_LargestNumberAppearsLast(self):
+        t = AssemblyTest(self, "argmax.s")
+        # create an array in the data section
+        array0 = t.array([3, -42, 4, 7, -5, 6, 5, -114, 432])
+        # load address of the array into register a0
+        t.input_array("a0", array0)
+        # set a1 to the length of the array
+        t.input_scalar("a1", len(array0))
+        # call the `argmax` function
+        t.call("argmax")
+        # check that the register a0 contains the correct output
+        t.check_scalar("a0", 8)
+        # generate the `assembly/TestArgmax_test_simple.s` file and run it through venus
+        t.execute()
+
+    def test_argmax_MultiLargestNumber(self):
+        t = AssemblyTest(self, "argmax.s")
+        # create an array in the data section
+        array0 = t.array([3, -42, 432, 7, -5, 6, 5, 432, 2])
         # load address of the array into register a0
         t.input_array("a0", array0)
         # set a1 to the length of the array
